@@ -82,7 +82,7 @@ async def handle_webapp_data(message: types.Message):
         balance = cursor.fetchone()[0]
 
         # Обработка игры
-        if data['game_type'] == 'coin_flip':
+        if data['game'] == 'coinflip':
             bet = float(data['bet'])
             choice = data['choice']
 
@@ -101,8 +101,10 @@ async def handle_webapp_data(message: types.Message):
             else:
                 new_balance = balance - bet
                 await message.answer(
-                    f"💥 Проигрыш! Выпало {result}\n"
-                    f"💰 Новый баланс: ${new_balance:.2f}"
+                    f"🎮 Game result:\n"
+                    f"🏆 {'Win' if data['result'] == data['choice'] else 'Lose'}\n"
+                    f"💵 Amount: ${data['bet']}\n"
+                    f"💰 New balance: ${data['balance']:.2f}"
                 )
 
             # Обновляем баланс
