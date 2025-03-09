@@ -3,62 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Coconut Casino</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <!-- Header Section -->
         <div class="header">
-            <div class="balance-section">
-                <div class="balance">$<span id="balanceValue">0.00</span> USDT</div>
-                <button class="deposit-btn" onclick="handleDeposit()">+</button>
-            </div>
-            <div class="profile" onclick="toggleProfile()">
-                <div class="avatar-circle" id="avatarCircle">
-                    <img id="userAvatar" src="" alt="Avatar" class="avatar">
-                </div>
+            <div class="balance">
+                💰 Balance: $<span id="balanceValue">0.00</span> USDT
             </div>
         </div>
 
-        <div class="profile-panel" id="profilePanel">
-    <button class="btn-bet back-btn" onclick="toggleProfile()">
-        <i class="fas fa-arrow-left"></i>
-    </button>
-    <div class="profile-header">
-        <div class="avatar-circle large">
-            <img id="userAvatarLarge" src="" alt="Avatar" class="avatar">
-        </div>
-        <h3>ID: <span id="userId"></span></h3>
-    </div>
-</div>
-
-        <!-- Games Grid -->
-        <div class="games-grid">
-            <div class="game-card" data-game="coinflip">
-                <h2>🎰 Coin Flip</h2>
-                <p>50/50 chance to double your bet</p>
+        <div class="game-section">
+            <h2>🎲 Coin Flip</h2>
+            <input type="number" id="betAmount" value="10" min="1">
+            <div class="buttons">
+                <button class="btn" onclick="placeBet('heads')">HEADS</button>
+                <button class="btn" onclick="placeBet('tails')">TAILS</button>
             </div>
-        </div>
-
-        <!-- Coin Flip Game -->
-        <div class="coin-game" id="coinGame">
-            <button class="btn-bet back-btn" onclick="closeGame()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-
-            <div class="coin" id="coin">
-                <div class="coin__side coin__front">HEADS</div>
-                <div class="coin__side coin__back">TAILS</div>
-            </div>
-
-            <div class="bet-controls">
-                <input type="number" id="betAmount" value="10" min="1" step="1">
-                <button class="btn-bet" onclick="placeBet('heads')">HEADS</button>
-                <button class="btn-bet" onclick="placeBet('tails')">TAILS</button>
-            </div>
+            <div id="result"></div>
         </div>
     </div>
 

@@ -1,88 +1,50 @@
-const BOT_TOKEN = '7546865748:AAE32kq2bPOeUzD84sdTHOYVa4-em0Pz6oQ'; // Ваш токен
+let currentBalance = 0;
 
-document.addEventListener('DOMContentLoaded', () => {
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-    loadUserData();
-});
+async function updateBalance() {
+    const response = await fetch('/api/balance');
+    const data = await response.json();
+    currentBalance = data.balance;
+    document.getElementById('balanceValue').textContent = currentBalance.toFixed(2);
+}
 
-async function loadUserData() {
+async function placeBet(choice) {
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+
     try {
-        const tg = window.Telegram.WebApp;
-        const userId = tg.initDataUnsafe.user?.id;
+        const response = await fetch('/api/bet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: betAmount,
+                choice: choice
+            })
+        });
 
-        if (!userId) {
-            console.error('User ID not found');
+        const result = await response.json();
+
+        if(result.error) {
+            alert(result.error);
             return;
         }
 
-        // Установка ID
-        document.getElementById('userId').textContent = userId;
+        document.getElementById('result').innerHTML = `
+            🎰 Result: ${result.result.toUpperCase()}<br>
+            ${result.win ? '🎉 You won!' : '💥 You lost!'}<br>
+            💵 New balance: $${result.new_balance.toFixed(2)}
+        `;
 
-        // Загрузка аватарки
-        const photosResponse = await fetch(
-            `https://api.telegram.org/bot${BOT_TOKEN}/getUserProfilePhotos?user_id=${userId}`
-        );
-        const photosData = await photosResponse.json();
+        await updateBalance();
 
-        // Если есть фото
-        if (photosData.result.photos?.length > 0) {
-            const fileResponse = await fetch(
-                `https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${photosData.result.photos[0][0].file_id}`
-            );
-            const fileData = await fileResponse.json();
-            const avatarUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
-            document.getElementById('userAvatar').src = avatarUrl;
-            document.getElementById('userAvatarLarge').src = avatarUrl;
-        } else {
-            // Заглушка, если фото нет
-            document.getElementById('userAvatar').src = 'https://via.placeholder.com/40';
-            document.getElementById('userAvatarLarge').src = 'https://via.placeholder.com/80';
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
+    } catch(error) {
+        console.error('Error:', error);
     }
 }
 
-// Управление профилем
-function toggleProfile() {
-    document.getElementById('profilePanel').classList.toggle('active');
-}
-
-// Пополнение баланса
-function handleDeposit() {
-    const tg = window.Telegram.WebApp;
-    tg.sendData(JSON.stringify({
-        action: 'deposit',
-        userId: tg.initDataUnsafe.user.id
-    }));
-}
-
-document.querySelectorAll('.game-card').forEach(card => {
-    card.addEventListener('click', () => {
-        const game = card.dataset.game;
-        document.getElementById(`${game}Game`).classList.add('active');
-    });
+// Инициализация
+document.addEventListener('DOMContentLoaded', async () => {
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+    await updateBalance();
 });
-
-function closeGame() {
-    document.querySelector('.coin-game.active').classList.remove('active');
-}
-
-function placeBet(side) {
-    const betAmount = parseFloat(document.getElementById('betAmount').value);
-    const coin = document.getElementById('coin');
-
-    coin.classList.add('flipping');
-
-    setTimeout(() => {
-        const tg = window.Telegram.WebApp;
-        tg.sendData(JSON.stringify({
-            game: 'coinflip',
-            bet: betAmount,
-            choice: side
-        }));
-        coin.classList.remove('flipping');
-    }, 3000);
-}
