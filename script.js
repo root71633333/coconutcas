@@ -7,13 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
 });
 
-// Загрузка данных пользователя
 async function loadUserData() {
     try {
         const tg = window.Telegram.WebApp;
-        const userId = tg.initDataUnsafe.user.id;
+        const userId = tg.initDataUnsafe.user?.id;
 
-        // Установка ID пользователя
+        if (!userId) {
+            console.error('User ID not found');
+            return;
+        }
+
+        // Установка ID
         document.getElementById('userId').textContent = userId;
 
         // Загрузка аватарки
@@ -22,7 +26,8 @@ async function loadUserData() {
         );
         const photosData = await photosResponse.json();
 
-        if (photosData.result.photos.length > 0) {
+        // Если есть фото
+        if (photosData.result.photos?.length > 0) {
             const fileResponse = await fetch(
                 `https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${photosData.result.photos[0][0].file_id}`
             );
@@ -30,6 +35,10 @@ async function loadUserData() {
             const avatarUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
             document.getElementById('userAvatar').src = avatarUrl;
             document.getElementById('userAvatarLarge').src = avatarUrl;
+        } else {
+            // Заглушка, если фото нет
+            document.getElementById('userAvatar').src = 'https://via.placeholder.com/40';
+            document.getElementById('userAvatarLarge').src = 'https://via.placeholder.com/80';
         }
     } catch (error) {
         console.error('Ошибка загрузки данных:', error);
@@ -50,7 +59,6 @@ function handleDeposit() {
     }));
 }
 
-// Игровая логика
 document.querySelectorAll('.game-card').forEach(card => {
     card.addEventListener('click', () => {
         const game = card.dataset.game;

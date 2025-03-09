@@ -77,7 +77,8 @@ async def handle_web_app_data(message: types.Message):
         data = json.loads(message.web_app_data.data)
         user_id = message.from_user.id
 
-        if data.get('type') == 'deposit':
+        # Обработка пополнения
+        if data.get('action') == 'deposit':
             return await cmd_deposit(message)
 
         # Получаем текущий баланс
@@ -85,7 +86,7 @@ async def handle_web_app_data(message: types.Message):
         balance = cursor.fetchone()[0]
 
         # Обработка игры
-        if data['game'] == 'coinflip':
+        if data.get('game') == 'coinflip':
             bet = float(data['bet'])
             choice = data['choice']
 
@@ -116,7 +117,7 @@ async def handle_web_app_data(message: types.Message):
 
     except Exception as e:
         logger.error(f"WebApp error: {e}")
-        await message.answer("⚠ Произошла ошибка при обработке запроса")
+        await message.answer("⚠ Ошибка обработки запроса")
 
 @dp.message_handler(commands=['deposit'])
 async def cmd_deposit(message: types.Message):
