@@ -13,6 +13,9 @@ async function loadUserData() {
         const tg = window.Telegram.WebApp;
         const userId = tg.initDataUnsafe.user.id;
 
+        // Установка ID пользователя
+        document.getElementById('userId').textContent = userId;
+
         // Загрузка аватарки
         const photosResponse = await fetch(
             `https://api.telegram.org/bot${BOT_TOKEN}/getUserProfilePhotos?user_id=${userId}`
@@ -24,12 +27,10 @@ async function loadUserData() {
                 `https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${photosData.result.photos[0][0].file_id}`
             );
             const fileData = await fileResponse.json();
-            document.getElementById('userAvatar').src =
-                `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
+            const avatarUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
+            document.getElementById('userAvatar').src = avatarUrl;
+            document.getElementById('userAvatarLarge').src = avatarUrl;
         }
-
-        // Установка ID пользователя
-        document.getElementById('userId').textContent = userId;
     } catch (error) {
         console.error('Ошибка загрузки данных:', error);
     }
@@ -68,15 +69,12 @@ function placeBet(side) {
     coin.classList.add('flipping');
 
     setTimeout(() => {
-        const result = Math.random() > 0.5 ? 'heads' : 'tails';
-        coin.classList.remove('flipping');
-
         const tg = window.Telegram.WebApp;
         tg.sendData(JSON.stringify({
             game: 'coinflip',
             bet: betAmount,
-            choice: side,
-            result: result
+            choice: side
         }));
+        coin.classList.remove('flipping');
     }, 3000);
 }

@@ -79,6 +79,7 @@ async def handle_web_app_data(message: types.Message):
 
         if data.get('type') == 'deposit':
             return await cmd_deposit(message)
+
         # Получаем текущий баланс
         cursor.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
         balance = cursor.fetchone()[0]
@@ -91,6 +92,7 @@ async def handle_web_app_data(message: types.Message):
             if bet > balance:
                 return await message.answer("❌ Недостаточно средств!")
 
+            # Генерация результата
             result = random.choice(['heads', 'tails'])
             if choice == result:
                 win_amount = bet * 1.95
@@ -103,21 +105,18 @@ async def handle_web_app_data(message: types.Message):
             else:
                 new_balance = balance - bet
                 await message.answer(
-                    f"🎮 Game result:\n"
-                    f"🏆 {'Win' if data['result'] == data['choice'] else 'Lose'}\n"
-                    f"💵 Amount: ${data['bet']}\n"
-                    f"💰 New balance: ${data['balance']:.2f}"
+                    f"❌ Проигрыш! Выпало {result}\n"
+                    f"💵 Потеряно: ${bet:.2f}\n"
+                    f"💰 Новый баланс: ${new_balance:.2f}"
                 )
 
             # Обновляем баланс
-            cursor.execute("UPDATE users SET balance = ? WHERE id = ?",
-                           (new_balance, user_id))
+            cursor.execute("UPDATE users SET balance = ? WHERE id = ?", (new_balance, user_id))
             conn.commit()
 
     except Exception as e:
         logger.error(f"WebApp error: {e}")
         await message.answer("⚠ Произошла ошибка при обработке запроса")
-
 
 @dp.message_handler(commands=['deposit'])
 async def cmd_deposit(message: types.Message):

@@ -17,14 +17,18 @@
                 <button class="deposit-btn" onclick="handleDeposit()">+</button>
             </div>
             <div class="profile" onclick="toggleProfile()">
-                <i class="fas fa-user"></i>
+                <div class="avatar-circle" id="avatarCircle">
+                    <img id="userAvatar" src="" alt="Avatar" class="avatar">
+                </div>
             </div>
         </div>
 
         <!-- Profile Panel -->
         <div class="profile-panel" id="profilePanel">
             <div class="profile-header">
-                <img id="userAvatar" src="" alt="Avatar" class="avatar">
+                <div class="avatar-circle large">
+                    <img id="userAvatarLarge" src="" alt="Avatar" class="avatar">
+                </div>
                 <h3>ID: <span id="userId"></span></h3>
             </div>
         </div>
@@ -39,7 +43,7 @@
 
         <!-- Coin Flip Game -->
         <div class="coin-game" id="coinGame">
-            <button class="btn-bet" onclick="closeGame()" style="position: absolute; left: 20px; top: 20px;">
+            <button class="btn-bet back-btn" onclick="closeGame()">
                 <i class="fas fa-arrow-left"></i>
             </button>
 
