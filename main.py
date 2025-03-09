@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 import random
 import sqlite3
-import os
 
 app = Flask(__name__)
 
@@ -53,6 +52,35 @@ def place_bet():
     new_balance = balance + (bet_amount if win else -bet_amount)
 
     # Обновляем баланс
+    c.execute("UPDATE users SET balance=? WHERE id=?", (new_balance, user_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        'result': result,
+        'win': win,
+        'new_balance': new_balance
+    })
+
+@app.route('/api/coinflip', methods=['POST'])
+def coinflip():
+    data = request.json
+    user_id = data.get('user_id', 1)
+    bet_amount = float(data['bet'])
+    choice = data['choice']
+
+    conn = sqlite3.connect('casino.db')
+    c = conn.cursor()
+    c.execute("SELECT balance FROM users WHERE id=?", (user_id,))
+    balance = c.fetchone()[0]
+
+    if bet_amount > balance:
+        return jsonify({'error': 'Недостаточно средств'}), 400
+
+    result = random.choice(['heads', 'tails'])
+    win = result == choice
+    new_balance = balance + (bet_amount if win else -bet_amount)
+
     c.execute("UPDATE users SET balance=? WHERE id=?", (new_balance, user_id))
     conn.commit()
     conn.close()

@@ -1,50 +1,67 @@
-let currentBalance = 0;
-
-async function updateBalance() {
-    const response = await fetch('/api/balance');
-    const data = await response.json();
-    currentBalance = data.balance;
-    document.getElementById('balanceValue').textContent = currentBalance.toFixed(2);
-}
-
-async function placeBet(choice) {
-    const betAmount = parseFloat(document.getElementById('betAmount').value);
-
-    try {
-        const response = await fetch('/api/bet', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                amount: betAmount,
-                choice: choice
-            })
-        });
-
-        const result = await response.json();
-
-        if(result.error) {
-            alert(result.error);
-            return;
-        }
-
-        document.getElementById('result').innerHTML = `
-            🎰 Result: ${result.result.toUpperCase()}<br>
-            ${result.win ? '🎉 You won!' : '💥 You lost!'}<br>
-            💵 New balance: $${result.new_balance.toFixed(2)}
-        `;
-
-        await updateBalance();
-
-    } catch(error) {
-        console.error('Error:', error);
-    }
-}
+const tg = window.Telegram.WebApp;
+let balance = 100.00;
 
 // Инициализация
-document.addEventListener('DOMContentLoaded', async () => {
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-    await updateBalance();
+tg.ready();
+tg.expand();
+
+// Загрузка профиля
+document.getElementById('userPhoto').src = tg.initDataUnsafe.user.photo_url;
+document.getElementById('userId').textContent = `ID: ${tg.initDataUnsafe.user.id}`;
+
+// Обновление баланса
+function updateBalance() {
+    document.getElementById('balanceValue').textContent = balance.toFixed(2);
+}
+
+// Открытие игры
+document.querySelectorAll('.game-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const game = card.dataset.game;
+        openGame(game);
+    });
 });
+
+function openGame(game) {
+    document.getElementById(`${game}Game`).classList.add('active');
+}
+
+function closeGame() {
+    document.querySelector('.coin-container.active').classList.remove('active');
+}
+
+// Логика Coin Flip
+function placeBet(side) {
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    if (betAmount > balance) {
+        alert('Not enough balance!');
+        return;
+    }
+
+    const coin = document.getElementById('coin');
+    coin.classList.add('flipping');
+
+    setTimeout(() => {
+        const result = Math.random() > 0.5 ? 'heads' : 'tails';
+        coin.classList.remove('flipping');
+
+        if (result === side) {
+            balance += betAmount;
+            alert(`You won $${betAmount}!`);
+        } else {
+            balance -= betAmount;
+            alert(`You lost $${betAmount}!`);
+        }
+
+        updateBalance();
+        tg.sendData(JSON.stringify({
+            game: 'coinflip',
+            bet: betAmount,
+            choice: side,
+            result: result,
+            balance: balance
+        }));
+    }, 3000);
+}
+
+updateBalance();
