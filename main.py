@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 API_TOKEN = '7546865748:AAE32kq2bPOeUzD84sdTHOYVa4-em0Pz6oQ'
 WEBAPP_URL = 'https://coconutcas.vercel.app' #валид сыллка gggggfaWDAWDWa
 DB_NAME = 'casino.db'
+PAYMENT_TOKEN = '347525:AAQfIjiFlVn7EJcrYGORzrdd3ypinlhC2rW'
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -70,13 +71,14 @@ async def cmd_start(message: types.Message):
         reply_markup=get_main_keyboard()
     )
 
-
 @dp.message_handler(content_types=types.ContentType.WEB_APP_DATA)
-async def handle_webapp_data(message: types.Message):
+async def handle_web_app_data(message: types.Message):
     try:
         data = json.loads(message.web_app_data.data)
         user_id = message.from_user.id
 
+        if data.get('type') == 'deposit':
+            return await cmd_deposit(message)
         # Получаем текущий баланс
         cursor.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
         balance = cursor.fetchone()[0]
@@ -122,9 +124,9 @@ async def cmd_deposit(message: types.Message):
     await bot.send_invoice(
         chat_id=message.chat.id,
         title="Пополнение баланса USDT",
-        description="Пополнение через Telegram Payments",
+        description="Пополнение через CryptoBot",
         payload="deposit",
-        provider_token="ВАШ_ПЛАТЕЖНЫЙ_ТОКЕН",
+        provider_token=PAYMENT_TOKEN,
         currency="USD",
         prices=[LabeledPrice(label="USDT", amount=10000)],  # 100.00 USD
         start_parameter="deposit"
